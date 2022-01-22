@@ -25,11 +25,10 @@ exports.getUsers = async (req, res) => {
 
 exports.editUser = async (req, res) => {
   try {
-    const { id } = req.params;
 
     const user = await tb_users.update(req.body, {
       where: {
-        id,
+        id: [req.params.id, req.user.id]
       },
     });
 

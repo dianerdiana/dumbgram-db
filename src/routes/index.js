@@ -23,7 +23,8 @@ const { addFeed, getFollowedFeed, getFeeds } = require("../controllers/feeds");
 const { getComments, addComment } = require('../controllers/comments')
 
 //import message
-const { addMessage, getMessageUser } = require('../controllers/messages')
+const { addMessage, getMessageUser } = require('../controllers/messages');
+const { uploadFile } = require("../middleware/uploadFile");
 
 //route auth
 router.post("/register", register)
@@ -31,7 +32,7 @@ router.post("/login", login)
 
 //route user
 router.get("/users", auth, getUsers)
-router.patch("/user/:id", editUser)
+router.patch("/user/:id", auth, editUser)
 router.delete("/user/:id", deleteUser)
 
 //route follows
@@ -39,7 +40,7 @@ router.get("/followers/:id", getFollowers)
 router.get("/following/:id", getFollowing)
 
 //route feeds
-router.post("/feed", auth, addFeed)
+router.post("/feed", auth, uploadFile('image'), addFeed)
 router.get("/feed/:id", auth, getFollowedFeed)
 router.get("/feeds", getFeeds)
 

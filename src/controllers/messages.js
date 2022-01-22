@@ -75,7 +75,9 @@ exports.getMessageUser = async (req, res) => {
 
     res.send({
       status: "Success",
-      data: messages
+      data: {
+        messages: messages
+      }
     })
     
   } catch (error) {

@@ -1,15 +1,19 @@
 const { tb_feeds, tb_users } = require("../../models")
 
 exports.addFeed = async (req, res) => {
-  const { fileName, caption } = req.body
-  const { id } = req.user
+  const data = req.body
+  const fileName = req.file.filename
 
   try {
-  await tb_feeds.create({ fileName, caption, user_id: id});
+  const newFeed = await tb_feeds.create({
+    ...data,
+    fileName,
+    user_id: req.user.id
+  });
 
-  const user = await tb_feeds.findOne({
+  let feedData = await tb_feeds.findOne({
     where: {
-      fileName
+      id: newFeed.id
     },
     include: {
       model: tb_users,
@@ -17,16 +21,22 @@ exports.addFeed = async (req, res) => {
       attributes: {
         exclude: ["email", "password", "bio", "createdAt", "updatedAt"]
       }
-    },
-    attributes: {
-      exclude: ["like", "user_id", "createdAt", "updatedAt"]
     }
   })
+
+  feedData = JSON.parse(JSON.stringify(feedData));
+
+  feedData = {
+    ...feedData,
+    fileName: process.env.FILE_PATH + feedData.fileName
+  }
 
     res.send({
       status: "success",
       message: "Add feed finished",
-      user
+      data: {
+        feed: feedData
+      }
     });
   } catch (error) {
     console.log(error);
@@ -41,7 +51,7 @@ exports.getFollowedFeed = async (req, res) => {
   const { id } = req.params
 
   try {
-    const feeds = await tb_feeds.findAll({
+    let feeds = await tb_feeds.findAll({
       where: {
         user_id: id
       },
@@ -54,6 +64,15 @@ exports.getFollowedFeed = async (req, res) => {
       },
       attributes: {
         exclude: ["user_id", "createdAt", "updatedAt"]
+      }
+    })
+
+    feeds = JSON.parse(JSON.stringify(feeds))
+
+    feeds = feeds.map((item) => {
+      return {
+        ...item,
+        fileName: process.env.FILE_PATH + item.fileName
       }
     })
 
@@ -73,7 +92,7 @@ exports.getFollowedFeed = async (req, res) => {
 exports.getFeeds = async (req, res) => {
 
   try {
-    const feeds = await tb_feeds.findAll({
+    let feeds = await tb_feeds.findAll({
       include: {
         model: tb_users,
         as: "uploader",
@@ -83,6 +102,15 @@ exports.getFeeds = async (req, res) => {
       },
       attributes: {
         exclude: ["user_id", "createdAt", "updatedAt"]
+      }
+    })
+
+    feeds = JSON.parse(JSON.stringify(feeds))
+
+    feeds = feeds.map((item) => {
+      return {
+        ...item,
+        fileName: process.env.FILE_PATH + item.fileName
       }
     })
 
